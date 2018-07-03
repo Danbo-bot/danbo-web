@@ -84,7 +84,7 @@ export default {
                 NProgress.done()
                 return response
             })
-            const response = await instance.get(`https://www.animeirl.xyz/danbo/servers/${this.$route.params.id}`)
+            const response = await instance.get(`https://www.danbo.space/api/v1/servers/${this.$route.params.id}`)
             this.leaderboard = response.data
         } catch (e) {
             this.errors.push(e)
