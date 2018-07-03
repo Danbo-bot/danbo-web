@@ -14,7 +14,7 @@
                         <v-list-tile-action-text>#{{key + 1}}</v-list-tile-action-text>
                     </v-list-tile-action>
                     <v-list-tile-avatar>
-                        <img :src="item.avatar_url">
+                        <img :src="item.avatar_url" onerror="this.onerror=null;this.src='/static/danbo.jpg';">
                     </v-list-tile-avatar>
                     <v-list-tile-content>
                         <v-flex class="d-flex" style="width:100%; align-items: center;">
