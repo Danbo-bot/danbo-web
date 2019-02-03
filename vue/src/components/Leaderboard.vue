@@ -6,9 +6,9 @@
       </v-flex>
       <v-flex xs12 sm6 offset-sm3 mt-3>
           <v-list>
-            <template v-for="(item, key) in leaderboard.users">
+            <template v-for="(item, key) in visibleUsers">
                 <v-list-tile
-                    :key="key"
+                    :key="'a' + key"
                     avatar>
                     <v-list-tile-action>
                         <v-list-tile-action-text>#{{key + 1}}</v-list-tile-action-text>
@@ -58,11 +58,23 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from "axios";
+import NProgress from "nprogress";
 export default {
     data() {
         return {
+            bottom: false,
             leaderboard: null,
+            visibleUsers: [],
+            allUsers: null,
+            index: 0,
+        };
+    },
+    watch: {
+        bottom(bottom) {
+            if (bottom) {
+                this.scrollAdvance();
+            }
         }
     },
     methods: {
@@ -71,24 +83,44 @@ export default {
         },
         expSinceLastLevel: function(exp, lvl) {
             return exp - Math.ceil((lvl * 8.6) ** 2);
+        },
+        bottomVisible() {
+            const scrollY = window.scrollY;
+            const visible = document.documentElement.clientHeight;
+            const pageHeight = document.documentElement.scrollHeight;
+            const bottomOfPage = visible + scrollY >= pageHeight;
+            return bottomOfPage || pageHeight < visible;
+        },
+        scrollAdvance: function() {
+            this.visibleUsers = this.visibleUsers.concat(
+                this.allUsers.slice(this.index, this.index + 25)
+            );
+            this.index = this.index + 25;
         }
     },
     async created() {
+        window.addEventListener("scroll", () => {
+            this.bottom = this.bottomVisible();
+        });
         try {
-            const instance = axios.create()
+            const instance = axios.create();
             instance.interceptors.request.use(config => {
                 NProgress.start();
                 return config;
-            })
+            });
             instance.interceptors.response.use(response => {
-                NProgress.done()
-                return response
-            })
-            const response = await instance.get(`https://www.danbo.space/api/v1/servers/${this.$route.params.id}`)
-            this.leaderboard = response.data
+                NProgress.done();
+                return response;
+            });
+            const response = await instance.get(`https://www.danbo.space/api/v1/servers/${this.$route.params.id}`);
+            this.allUsers = response.data.users;
+            this.visibleUsers = this.allUsers.slice(0, 25);
+            this.index = 26;
+            this.leaderboard = response.data;
         } catch (e) {
-            this.errors.push(e)
+            this.errors.push(e);
         }
+        
     }
-}
+};
 </script>
